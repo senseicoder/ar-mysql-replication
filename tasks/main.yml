@@ -26,11 +26,12 @@
     and (mysql_replication_master != '')
 
 - name: Check master replication status
-  mysql_replication: mode=getmaster
+  mysql_replication: mode=getmaster login_user=root login_password="{{ mysql_root_password }}"
+  become: false
   delegate_to: "{{ mysql_replication_master_ssh }}"
   register: master
   when: >
-    (slave_repl_status|failed or slave_repl_status.Is_Slave == false)
+    (slave_repl_status is failed or slave_repl_status.Is_Slave == false)
     and (mysql_replication_role == 'slave'
     or mysql_replication_role == 'master-master')
     and (mysql_replication_master != '')
@@ -45,7 +46,7 @@
     master_log_pos: "{{ master.Position }}"
   ignore_errors: True
   when: >
-    (slave_repl_status|failed or slave_repl_status.Is_Slave == false)
+    (slave_repl_status is failed or slave_repl_status.Is_Slave == false)
     and (mysql_replication_role == 'slave'
     or mysql_replication_role == 'master-master')
     and (mysql_replication_master != '')
@@ -54,7 +55,7 @@
 - name: Start replication
   mysql_replication: mode=startslave
   when: >
-    (slave_repl_status|failed or slave_repl_status.Is_Slave == false)
+    (slave_repl_status is failed or slave_repl_status.Is_Slave == false)
     and (mysql_replication_role == 'slave'
     or mysql_replication_role == 'master-master')
     and (mysql_replication_master != '')
